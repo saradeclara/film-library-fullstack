@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using api.Data;
+using api.Dtos.Film;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers
@@ -12,16 +14,19 @@ namespace api.Controllers
     public class FilmController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        public FilmController(ApplicationDbContext context)
+        private readonly IMapper _mapper;
+        public FilmController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         [HttpGet]
         public IActionResult GetAll()
         {
             var films = _context.Films.ToList();
-            return Ok(films);
+            var mappedFilms = _mapper.Map<List<FilmDto>>(films);
+            return Ok(mappedFilms);
         }
 
         [HttpGet("{id}")]
@@ -32,7 +37,7 @@ namespace api.Controllers
             {
                 return NotFound();
             }
-            return Ok(singleFilm);
+            return Ok(_mapper.Map<FilmDto>(singleFilm));
         }
     }
 }
