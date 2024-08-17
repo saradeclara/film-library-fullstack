@@ -82,5 +82,26 @@ namespace api.Controllers
             // return updated record
             return Ok(_mapper.Map<FilmDto>(foundFilm));
         }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete([FromRoute] int id)
+        {
+            // find film
+            var filmToDelete = _context.Films.FirstOrDefault(film => film.Id == id);
+
+            // if not found, return NotFound()
+            if (filmToDelete == null)
+            {
+                return NotFound("Film with " + id + " id was not found.");
+            }
+
+            // if found, delete from db
+            _context.Films.Remove(filmToDelete);
+            // save changes
+            _context.SaveChanges();
+
+            // return nocontent
+            return NoContent();
+        }
     }
 }
