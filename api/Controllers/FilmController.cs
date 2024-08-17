@@ -52,5 +52,35 @@ namespace api.Controllers
             return CreatedAtAction(nameof(GetById), new { id = newFilmModel.Id }, _mapper.Map<FilmDto>(newFilmModel));
 
         }
+
+        [HttpPut("{id}")]
+        public IActionResult Update([FromRoute] int id, [FromBody] UpdateFilmDto updateFilmDto)
+        {
+            // check body
+            if (updateFilmDto == null)
+            {
+                return BadRequest("Invalid Data");
+            }
+
+            // find film record through id
+            var foundFilm = _context.Films.FirstOrDefault(film => film.Id == id);
+
+            // if film is not found, return NotFound()
+            if (foundFilm == null)
+            {
+                return NotFound("Film with " + id + " id was not found.");
+            }
+
+            // if film is found
+            // update file
+            _mapper.Map(updateFilmDto, foundFilm);
+
+            // add to db
+            // save changes
+            _context.SaveChanges();
+
+            // return updated record
+            return Ok(_mapper.Map<FilmDto>(foundFilm));
+        }
     }
 }

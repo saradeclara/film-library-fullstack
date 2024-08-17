@@ -14,6 +14,8 @@ namespace api.Mappers
         {
             CreateMap<Film, FilmDto>();
             CreateMap<CreateFilmDto, Film>();
+            CreateMap<UpdateFilmDto, Film>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
 
     }
