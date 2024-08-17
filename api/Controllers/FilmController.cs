@@ -7,6 +7,7 @@ using api.Dtos.Film;
 using api.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
@@ -23,17 +24,17 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var films = _context.Films.ToList();
+            var films = await _context.Films.ToListAsync();
             var mappedFilms = _mapper.Map<List<FilmDto>>(films);
             return Ok(mappedFilms);
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById([FromRoute] int id)
+        public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var singleFilm = _context.Films.Find(id);
+            var singleFilm = await _context.Films.FindAsync(id);
             if (singleFilm == null)
             {
                 return NotFound();
@@ -42,19 +43,19 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] CreateFilmDto createFilmDto)
+        public async Task<IActionResult> Create([FromBody] CreateFilmDto createFilmDto)
         {
             var newFilmModel = _mapper.Map<Film>(createFilmDto);
 
-            _context.Films.Add(newFilmModel);
-            _context.SaveChanges();
+            await _context.Films.AddAsync(newFilmModel);
+            await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetById), new { id = newFilmModel.Id }, _mapper.Map<FilmDto>(newFilmModel));
 
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update([FromRoute] int id, [FromBody] UpdateFilmDto updateFilmDto)
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateFilmDto updateFilmDto)
         {
             // check body
             if (updateFilmDto == null)
@@ -63,7 +64,7 @@ namespace api.Controllers
             }
 
             // find film record through id
-            var foundFilm = _context.Films.FirstOrDefault(film => film.Id == id);
+            var foundFilm = await _context.Films.FirstOrDefaultAsync(film => film.Id == id);
 
             // if film is not found, return NotFound()
             if (foundFilm == null)
@@ -77,17 +78,17 @@ namespace api.Controllers
 
             // add to db
             // save changes
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             // return updated record
             return Ok(_mapper.Map<FilmDto>(foundFilm));
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete([FromRoute] int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
             // find film
-            var filmToDelete = _context.Films.FirstOrDefault(film => film.Id == id);
+            var filmToDelete = await _context.Films.FirstOrDefaultAsync(film => film.Id == id);
 
             // if not found, return NotFound()
             if (filmToDelete == null)
