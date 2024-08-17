@@ -13,6 +13,7 @@ namespace api.Mappers
         public FilmMappingProfile()
         {
             CreateMap<Film, FilmDto>();
+            CreateMap<CreateFilmDto, Film>();
         }
 
     }

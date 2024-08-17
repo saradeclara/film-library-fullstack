@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using api.Data;
 using api.Dtos.Film;
+using api.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
@@ -38,6 +39,18 @@ namespace api.Controllers
                 return NotFound();
             }
             return Ok(_mapper.Map<FilmDto>(singleFilm));
+        }
+
+        [HttpPost]
+        public IActionResult Create([FromBody] CreateFilmDto createFilmDto)
+        {
+            var newFilmModel = _mapper.Map<Film>(createFilmDto);
+
+            _context.Films.Add(newFilmModel);
+            _context.SaveChanges();
+
+            return CreatedAtAction(nameof(GetById), new { id = newFilmModel.Id }, _mapper.Map<FilmDto>(newFilmModel));
+
         }
     }
 }
