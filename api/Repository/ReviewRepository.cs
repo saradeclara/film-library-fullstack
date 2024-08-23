@@ -41,9 +41,19 @@ namespace api.Repository
             return mappedCreateDto;
         }
 
-        public Task<Review?> DeleteReviewAsync(int id)
+        public async Task<Review?> DeleteReviewAsync(int id)
         {
-            throw new NotImplementedException();
+            var reviewToDelete = await _context.Reviews.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (reviewToDelete == null)
+            {
+                return null;
+            }
+
+            _context.Reviews.Remove(reviewToDelete);
+            await _context.SaveChangesAsync();
+
+            return reviewToDelete;
         }
 
         public async Task<List<Review>> GetAllReviewsAsync()

@@ -72,5 +72,18 @@ namespace api.Controllers
 
             return Ok(_mapper.Map<ReviewDto>(updatedReviewModel));
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete([FromRoute] int id)
+        {
+            var reviewToDelete = await _reviewRepo.DeleteReviewAsync(id);
+
+            if (reviewToDelete == null)
+            {
+                return NotFound("No Review found");
+            }
+
+            return NoContent();
+        }
     }
 }
