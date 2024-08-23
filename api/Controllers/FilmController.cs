@@ -50,11 +50,10 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateFilmDto createFilmDto)
         {
-            var newFilmModel = _mapper.Map<Film>(createFilmDto);
 
-            await _filmRepo.CreateFilmAsync(newFilmModel);
+            var createdFilmModel = await _filmRepo.CreateFilmAsync(createFilmDto);
 
-            return CreatedAtAction(nameof(GetById), new { id = newFilmModel.Id }, _mapper.Map<FilmDto>(newFilmModel));
+            return CreatedAtAction(nameof(GetById), new { id = createdFilmModel?.Id }, _mapper.Map<FilmDto>(createdFilmModel));
 
         }
 
