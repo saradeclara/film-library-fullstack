@@ -68,9 +68,9 @@ namespace api.Controllers
             }
 
 
-            await _reviewRepo.UpdateReviewAsync(id, updateReviewDto);
+            var updatedReviewModel = await _reviewRepo.UpdateReviewAsync(id, updateReviewDto);
 
-            return Ok(updateReviewDto);
+            return Ok(_mapper.Map<ReviewDto>(updatedReviewModel));
         }
     }
 }
