@@ -49,7 +49,7 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(int filmId, [FromBody] CreateReviewDto createReviewDto)
         {
-            if (createReviewDto == null)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
@@ -62,7 +62,7 @@ namespace api.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update([FromRoute] int id, UpdateReviewDto updateReviewDto)
         {
-            if (updateReviewDto == null)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }

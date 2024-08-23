@@ -50,6 +50,10 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateFilmDto createFilmDto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
 
             var createdFilmModel = await _filmRepo.CreateFilmAsync(createFilmDto);
 
@@ -60,10 +64,9 @@ namespace api.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateFilmDto updateFilmDto)
         {
-            // check body
-            if (updateFilmDto == null)
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Invalid Data");
+                return BadRequest();
             }
 
             var foundFilm = await _filmRepo.UpdateFilmAsync(id, updateFilmDto);
@@ -82,7 +85,6 @@ namespace api.Controllers
         {
             await _filmRepo.DeleteFilmAsync(id);
 
-            // return nocontent
             return NoContent();
         }
     }
