@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using api.Data;
 using api.Dtos.Film;
+using api.Interfaces;
 using api.Models;
+using api.Repository;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,28 +19,33 @@ namespace api.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
-        public FilmController(ApplicationDbContext context, IMapper mapper)
+        private readonly IFilmRepository _filmRepo;
+        public FilmController(ApplicationDbContext context, IMapper mapper, IFilmRepository filmRepo)
         {
             _context = context;
             _mapper = mapper;
+            _filmRepo = filmRepo;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var films = await _context.Films.ToListAsync();
+            var films = await _filmRepo.GetAllFilmsAsync();
             var mappedFilms = _mapper.Map<List<FilmDto>>(films);
+
             return Ok(mappedFilms);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var singleFilm = await _context.Films.FindAsync(id);
+            var singleFilm = await _filmRepo.GetFilmByIdAsync(id);
+
             if (singleFilm == null)
             {
-                return NotFound();
+                return NotFound("Film not found");
             }
+
             return Ok(_mapper.Map<FilmDto>(singleFilm));
         }
 
@@ -47,8 +54,7 @@ namespace api.Controllers
         {
             var newFilmModel = _mapper.Map<Film>(createFilmDto);
 
-            await _context.Films.AddAsync(newFilmModel);
-            await _context.SaveChangesAsync();
+            await _filmRepo.CreateFilmAsync(newFilmModel);
 
             return CreatedAtAction(nameof(GetById), new { id = newFilmModel.Id }, _mapper.Map<FilmDto>(newFilmModel));
 
@@ -63,22 +69,12 @@ namespace api.Controllers
                 return BadRequest("Invalid Data");
             }
 
-            // find film record through id
-            var foundFilm = await _context.Films.FirstOrDefaultAsync(film => film.Id == id);
+            var foundFilm = await _filmRepo.UpdateFilmAsync(id, updateFilmDto);
 
-            // if film is not found, return NotFound()
             if (foundFilm == null)
             {
-                return NotFound("Film with " + id + " id was not found.");
+                return NotFound("Film not found");
             }
-
-            // if film is found
-            // update file
-            _mapper.Map(updateFilmDto, foundFilm);
-
-            // add to db
-            // save changes
-            await _context.SaveChangesAsync();
 
             // return updated record
             return Ok(_mapper.Map<FilmDto>(foundFilm));
@@ -87,19 +83,7 @@ namespace api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            // find film
-            var filmToDelete = await _context.Films.FirstOrDefaultAsync(film => film.Id == id);
-
-            // if not found, return NotFound()
-            if (filmToDelete == null)
-            {
-                return NotFound("Film with " + id + " id was not found.");
-            }
-
-            // if found, delete from db
-            _context.Films.Remove(filmToDelete);
-            // save changes
-            _context.SaveChanges();
+            await _filmRepo.DeleteFilmAsync(id);
 
             // return nocontent
             return NoContent();
