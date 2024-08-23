@@ -11,5 +11,6 @@ namespace api.Models
         public required string Title { get; set; }
         public List<Actor> Cast { get; set; } = new List<Actor>();
         public List<Director> DirectedBy { get; set; } = new List<Director>();
+        public List<Review> Reviews { get; set; } = new List<Review>();
     }
 }
