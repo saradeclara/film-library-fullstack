@@ -33,9 +33,16 @@ namespace api.Repository
             return await _context.Reviews.ToListAsync();
         }
 
-        public Task<Review?> GetReviewByIdAsync(int id)
+        async public Task<Review?> GetReviewByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var foundReview = await _context.Reviews.FindAsync(id);
+
+            if (foundReview == null)
+            {
+                return null;
+            }
+
+            return foundReview;
         }
 
         public Task<Review?> UpdateReviewAsync(int id, UpdateReviewDto updateReviewDto)
