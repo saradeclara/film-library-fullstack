@@ -45,5 +45,17 @@ namespace api.Controllers
 
             return Ok(mappedFoundReview);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(int filmId, [FromBody] CreateReviewDto createReviewDto)
+        {
+            var newReviewModel = _mapper.Map<Review>(createReviewDto);
+            // setting filmId after mapping
+            newReviewModel.FilmId = filmId;
+
+            await _reviewRepo.CreateReviewAsync(filmId, newReviewModel);
+
+            return CreatedAtAction(nameof(GetById), new { id = newReviewModel.Id }, _mapper.Map<ReviewDto>(newReviewModel));
+        }
     }
 }
