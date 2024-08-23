@@ -17,12 +17,10 @@ namespace api.Controllers
     [ApiController]
     public class FilmController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IFilmRepository _filmRepo;
-        public FilmController(ApplicationDbContext context, IMapper mapper, IFilmRepository filmRepo)
+        public FilmController(IMapper mapper, IFilmRepository filmRepo)
         {
-            _context = context;
             _mapper = mapper;
             _filmRepo = filmRepo;
         }
