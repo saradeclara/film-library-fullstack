@@ -6,6 +6,7 @@ using api.Data;
 using api.Dtos.Review;
 using api.Interfaces;
 using api.Models;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Repository
@@ -13,26 +14,31 @@ namespace api.Repository
     public class ReviewRepository : IReviewRepository
     {
         private readonly ApplicationDbContext _context;
-        public ReviewRepository(ApplicationDbContext context)
+        private readonly IMapper _mapper;
+        public ReviewRepository(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
-        async public Task<Review?> CreateReviewAsync(int filmId, Review newReviewModel)
+        public async Task<Review?> CreateReviewAsync(int filmId, CreateReviewDto createReviewDto)
         {
             // check if film exists
             var foundFilm = await _context.Films.FindAsync(filmId);
-
             // if film is null, return null
             if (foundFilm == null)
             {
                 return null;
             }
 
-            await _context.Reviews.AddAsync(newReviewModel);
+            // map dto to model to add this to db
+            var mappedCreateDto = _mapper.Map<Review>(createReviewDto);
+            mappedCreateDto.FilmId = filmId;
+
+            await _context.Reviews.AddAsync(mappedCreateDto);
             await _context.SaveChangesAsync();
 
-            return newReviewModel;
+            return mappedCreateDto;
         }
 
         public Task<Review?> DeleteReviewAsync(int id)
@@ -40,12 +46,12 @@ namespace api.Repository
             throw new NotImplementedException();
         }
 
-        async public Task<List<Review>> GetAllReviewsAsync()
+        public async Task<List<Review>> GetAllReviewsAsync()
         {
             return await _context.Reviews.ToListAsync();
         }
 
-        async public Task<Review?> GetReviewByIdAsync(int id)
+        public async Task<Review?> GetReviewByIdAsync(int id)
         {
             var foundReview = await _context.Reviews.FindAsync(id);
 
@@ -57,9 +63,21 @@ namespace api.Repository
             return foundReview;
         }
 
-        public Task<Review?> UpdateReviewAsync(int id, UpdateReviewDto updateReviewDto)
+        public async Task<Review?> UpdateReviewAsync(int id, UpdateReviewDto updateReviewDto)
         {
-            throw new NotImplementedException();
+            var reviewToUpdate = await _context.Reviews.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (reviewToUpdate == null)
+            {
+                return null;
+            }
+
+            // update review
+            _mapper.Map(updateReviewDto, reviewToUpdate);
+
+            await _context.SaveChangesAsync();
+
+            return reviewToUpdate;
         }
     }
 }

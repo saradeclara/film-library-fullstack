@@ -21,12 +21,14 @@ namespace api.Repository
             _mapper = mapper;
         }
 
-        public async Task<Film> CreateFilmAsync(Film newFilm)
+        public async Task<Film> CreateFilmAsync(CreateFilmDto createFilmDto)
         {
-            await _context.Films.AddAsync(newFilm);
+            var createFilmModel = _mapper.Map<Film>(createFilmDto);
+
+            await _context.Films.AddAsync(createFilmModel);
             await _context.SaveChangesAsync();
 
-            return newFilm;
+            return createFilmModel;
         }
 
         public async Task<Film?> DeleteFilmAsync(int id)

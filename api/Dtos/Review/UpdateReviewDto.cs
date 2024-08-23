@@ -7,8 +7,6 @@ namespace api.Dtos.Review
 {
     public class UpdateReviewDto
     {
-        public int Id { get; set; }
         public required string Body { get; set; }
-        public DateTime CreatedOn { get; set; } = DateTime.Now;
     }
 }

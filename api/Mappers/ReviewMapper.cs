@@ -15,6 +15,7 @@ namespace api.Mappers
             CreateMap<Review, ReviewDto>();
             CreateMap<ReviewDto, Review>();
             CreateMap<CreateReviewDto, Review>();
+            CreateMap<UpdateReviewDto, Review>();
         }
     }
 }

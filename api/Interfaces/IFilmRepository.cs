@@ -11,7 +11,7 @@ namespace api.Interfaces
     {
         Task<List<Film>> GetAllFilmsAsync();
         Task<Film?> GetFilmByIdAsync(int id);
-        Task<Film> CreateFilmAsync(Film newFilmModel);
+        Task<Film> CreateFilmAsync(CreateFilmDto createFilmDto);
         Task<Film?> UpdateFilmAsync(int id, UpdateFilmDto updateFilmDto);
         Task<Film?> DeleteFilmAsync(int id);
     }

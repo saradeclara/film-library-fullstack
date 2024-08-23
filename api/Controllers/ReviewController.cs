@@ -49,13 +49,28 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(int filmId, [FromBody] CreateReviewDto createReviewDto)
         {
-            var newReviewModel = _mapper.Map<Review>(createReviewDto);
-            // setting filmId after mapping
-            newReviewModel.FilmId = filmId;
+            if (createReviewDto == null)
+            {
+                return BadRequest();
+            }
 
-            await _reviewRepo.CreateReviewAsync(filmId, newReviewModel);
+            var createdReviewModel = await _reviewRepo.CreateReviewAsync(filmId, createReviewDto);
 
-            return CreatedAtAction(nameof(GetById), new { id = newReviewModel.Id }, _mapper.Map<ReviewDto>(newReviewModel));
+            return CreatedAtAction(nameof(GetById), new { id = createdReviewModel?.Id }, _mapper.Map<ReviewDto>(createdReviewModel));
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update([FromRoute] int id, UpdateReviewDto updateReviewDto)
+        {
+            if (updateReviewDto == null)
+            {
+                return BadRequest();
+            }
+
+
+            var updatedReviewModel = await _reviewRepo.UpdateReviewAsync(id, updateReviewDto);
+
+            return Ok(_mapper.Map<ReviewDto>(updatedReviewModel));
         }
     }
 }
