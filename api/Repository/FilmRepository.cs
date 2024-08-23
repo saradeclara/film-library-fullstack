@@ -43,6 +43,7 @@ namespace api.Repository
 
             _context.Films.Remove(filmToDelete);
             _context.SaveChanges();
+
             return filmToDelete;
         }
 
