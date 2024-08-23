@@ -13,6 +13,8 @@ namespace api.Mappers
         public ReviewMappingProfile()
         {
             CreateMap<Review, ReviewDto>();
+            CreateMap<ReviewDto, Review>();
+            CreateMap<CreateReviewDto, Review>();
         }
     }
 }

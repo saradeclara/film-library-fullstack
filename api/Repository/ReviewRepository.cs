@@ -18,9 +18,21 @@ namespace api.Repository
             _context = context;
         }
 
-        public Task<Review> CreateReviewAsync()
+        async public Task<Review?> CreateReviewAsync(int filmId, Review newReviewModel)
         {
-            throw new NotImplementedException();
+            // check if film exists
+            var foundFilm = await _context.Films.FindAsync(filmId);
+
+            // if film is null, return null
+            if (foundFilm == null)
+            {
+                return null;
+            }
+
+            await _context.Reviews.AddAsync(newReviewModel);
+            await _context.SaveChangesAsync();
+
+            return newReviewModel;
         }
 
         public Task<Review?> DeleteReviewAsync(int id)
