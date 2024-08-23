@@ -34,7 +34,7 @@ namespace api.Controllers
             return Ok(mappedFilms);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
             var singleFilm = await _filmRepo.GetFilmByIdAsync(id);
@@ -57,7 +57,7 @@ namespace api.Controllers
 
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateFilmDto updateFilmDto)
         {
             // check body
@@ -77,7 +77,7 @@ namespace api.Controllers
             return Ok(_mapper.Map<FilmDto>(foundFilm));
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             await _filmRepo.DeleteFilmAsync(id);
