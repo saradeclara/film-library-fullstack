@@ -46,14 +46,14 @@ namespace api.Repository
 
         public async Task<List<Film>> GetAllFilmsAsync()
         {
-            var films = await _context.Films.ToListAsync();
+            var films = await _context.Films.Include(el => el.Reviews).ToListAsync();
 
             return films;
         }
 
         public async Task<Film?> GetFilmByIdAsync(int id)
         {
-            return await _context.Films.FindAsync(id);
+            return await _context.Films.Include(el => el.Reviews).FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<Film?> UpdateFilmAsync(int id, UpdateFilmDto updateFilmDto)

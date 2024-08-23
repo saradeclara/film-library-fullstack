@@ -31,5 +31,19 @@ namespace api.Controllers
 
             return Ok(mappedReviews);
         }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById([FromRoute] int id)
+        {
+            var foundReview = await _reviewRepo.GetReviewByIdAsync(id);
+
+            if (foundReview == null)
+            {
+                return NotFound();
+            }
+            var mappedFoundReview = _mapper.Map<ReviewDto>(foundReview);
+
+            return Ok(mappedFoundReview);
+        }
     }
 }
