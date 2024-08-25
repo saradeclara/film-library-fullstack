@@ -47,11 +47,32 @@ namespace api.Repository
             return filmToDelete;
         }
 
-        public async Task<List<Film>> GetAllFilmsAsync()
+        public async Task<List<Film>> GetAllFilmsAsync(string? title, string? sortBy, bool? isDescending, int pageNumber, int pageSize)
         {
-            var films = await _context.Films.Include(el => el.Reviews).ToListAsync();
+            var films = _context.Films.Include(el => el.Reviews).AsQueryable();
 
-            return films;
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                films = films.Where(singleFilm => singleFilm.Title.Contains(title));
+            }
+
+            if (!string.IsNullOrWhiteSpace(sortBy))
+            {
+                switch (sortBy.ToLower())
+                {
+                    case "title":
+                        films = isDescending == true
+                            ? films.OrderByDescending(film => film.Title)
+                            : films.OrderBy(film => film.Title);
+                        break;
+
+                }
+            }
+
+            var skipNumber = (pageNumber - 1) * pageSize;
+            var takeNumber = pageSize;
+
+            return await films.Skip(skipNumber).Take(takeNumber).ToListAsync();
         }
 
         public async Task<Film?> GetFilmByIdAsync(int id)

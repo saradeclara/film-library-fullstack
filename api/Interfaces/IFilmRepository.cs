@@ -9,7 +9,7 @@ namespace api.Interfaces
 {
     public interface IFilmRepository
     {
-        Task<List<Film>> GetAllFilmsAsync();
+        Task<List<Film>> GetAllFilmsAsync(string? filmTitle, string? sortBy, bool? isDescending, int pageNumber, int pageSize);
         Task<Film?> GetFilmByIdAsync(int id);
         Task<Film> CreateFilmAsync(CreateFilmDto createFilmDto);
         Task<Film?> UpdateFilmAsync(int id, UpdateFilmDto updateFilmDto);
