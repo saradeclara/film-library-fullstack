@@ -32,7 +32,7 @@ namespace api.Controllers
             return Ok(mappedReviews);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
             var foundReview = await _reviewRepo.GetReviewByIdAsync(id);
@@ -49,7 +49,7 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(int filmId, [FromBody] CreateReviewDto createReviewDto)
         {
-            if (createReviewDto == null)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
@@ -59,10 +59,10 @@ namespace api.Controllers
             return CreatedAtAction(nameof(GetById), new { id = createdReviewModel?.Id }, _mapper.Map<ReviewDto>(createdReviewModel));
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Update([FromRoute] int id, UpdateReviewDto updateReviewDto)
         {
-            if (updateReviewDto == null)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
@@ -73,7 +73,7 @@ namespace api.Controllers
             return Ok(_mapper.Map<ReviewDto>(updatedReviewModel));
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var reviewToDelete = await _reviewRepo.DeleteReviewAsync(id);
