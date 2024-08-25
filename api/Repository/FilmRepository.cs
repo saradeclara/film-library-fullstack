@@ -47,11 +47,16 @@ namespace api.Repository
             return filmToDelete;
         }
 
-        public async Task<List<Film>> GetAllFilmsAsync()
+        public async Task<List<Film>> GetAllFilmsAsync(string? filmTitle)
         {
-            var films = await _context.Films.Include(el => el.Reviews).ToListAsync();
+            var films = _context.Films.Include(el => el.Reviews).AsQueryable();
 
-            return films;
+            if (!string.IsNullOrWhiteSpace(filmTitle))
+            {
+                films = films.Where(singleFilm => singleFilm.Title.Contains(filmTitle));
+            }
+
+            return await films.ToListAsync();
         }
 
         public async Task<Film?> GetFilmByIdAsync(int id)

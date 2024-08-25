@@ -26,9 +26,9 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] string? filmTitle)
         {
-            var films = await _filmRepo.GetAllFilmsAsync();
+            var films = await _filmRepo.GetAllFilmsAsync(filmTitle);
             var mappedFilms = _mapper.Map<List<FilmDto>>(films);
 
             return Ok(mappedFilms);
