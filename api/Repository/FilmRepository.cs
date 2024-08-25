@@ -47,7 +47,7 @@ namespace api.Repository
             return filmToDelete;
         }
 
-        public async Task<List<Film>> GetAllFilmsAsync(string? title, string? sortBy, bool? isDescending)
+        public async Task<List<Film>> GetAllFilmsAsync(string? title, string? sortBy, bool? isDescending, int pageNumber, int pageSize)
         {
             var films = _context.Films.Include(el => el.Reviews).AsQueryable();
 
@@ -69,7 +69,10 @@ namespace api.Repository
                 }
             }
 
-            return await films.ToListAsync();
+            var skipNumber = (pageNumber - 1) * pageSize;
+            var takeNumber = pageSize;
+
+            return await films.Skip(skipNumber).Take(takeNumber).ToListAsync();
         }
 
         public async Task<Film?> GetFilmByIdAsync(int id)
