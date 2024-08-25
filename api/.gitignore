@@ -4,3 +4,6 @@ obj/
 *.exe
 *.pdb
 *.cache
+
+api/obj/Debug/net8.0/api.AssemblyInfo.cs
+api/obj/Debug/net8.0/api.sourcelink.json
