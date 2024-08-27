@@ -7,6 +7,7 @@ using api.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Serilog;
 
 namespace api.Controllers
 {
@@ -23,7 +24,7 @@ namespace api.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Create(CreateUserDto createUserDto)
+        public async Task<IActionResult> Create([FromBody] CreateUserDto createUserDto)
         {
             // check dto is valid
             if (!ModelState.IsValid)
@@ -31,37 +32,44 @@ namespace api.Controllers
                 return BadRequest();
             }
 
-            try
+            var createdUserModel = await _authRepo.CreateNewUser(createUserDto);
+
+            if (createdUserModel == null)
             {
-                // invoke service
-                var createdUserModel = await _authRepo.CreateNewUser(createUserDto);
-
-                if (createdUserModel == null)
-                {
-                    return Conflict("A user with this email already exists");
-                }
-
-                // map model to dto to return to user
-                var createdUserDto = _mapper.Map<UserDto>(createdUserModel);
-
-                return CreatedAtAction(
-                    nameof(UserController.GetById),
-                    "User",
-                    new { id = createdUserModel?.Id },
-                    createdUserDto
-                    );
+                return Conflict("A user with this email already exists");
             }
-            catch (Exception _ex)
-            {
-                // Log the exception
-                return StatusCode(500, new { message = "An unexpected error occurred while creating the user" });
-            }
+
+            // map model to dto to return to user
+            var createdUserDto = _mapper.Map<UserDto>(createdUserModel);
+
+            return CreatedAtAction(
+                nameof(UserController.GetById),
+                "User",
+                new { id = createdUserModel?.Id },
+                createdUserDto
+                );
         }
 
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginUserDto loginUserDto)
+        {
+            // check if credentials are valid
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
 
+            var loggedInUser = await _authRepo.LoginUser(loginUserDto);
 
+            if (loggedInUser == null)
+            {
+                return Unauthorized();
+            }
 
+            var loggedInUserDto = _mapper.Map<LoginResponseDto>(loggedInUser);
 
-        // [HttpPost("login")]
+            return Ok(loggedInUserDto);
+
+        }
     }
 }
