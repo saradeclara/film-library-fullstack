@@ -147,3 +147,4 @@ C:\Users\sarad\projects\film-library-fullstack\api\bin\Debug\net8.0\Microsoft.As
 C:\Users\sarad\projects\film-library-fullstack\api\bin\Debug\net8.0\Microsoft.Extensions.Identity.Core.dll
 C:\Users\sarad\projects\film-library-fullstack\api\bin\Debug\net8.0\Microsoft.Extensions.Identity.Stores.dll
 C:\Users\sarad\projects\film-library-fullstack\api\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
+C:\Users\sarad\projects\film-library-fullstack\api\bin\Debug\net8.0\BCrypt.Net-Next.dll
