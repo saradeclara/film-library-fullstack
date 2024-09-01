@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using api.Dtos.User;
+using api.Enums;
 using api.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
@@ -53,22 +54,24 @@ namespace api.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginUserDto loginUserDto)
         {
-            // check if credentials are valid
-            if (!ModelState.IsValid)
+
+            var (result, token) = await _authRepo.LoginUser(loginUserDto);
+
+            switch (result)
             {
-                return BadRequest();
+                case LoginResult.Success:
+                    return Ok(new { Token = token });
+                case LoginResult.AccountLocked:
+                    return BadRequest("Account is locked.");
+                case LoginResult.InvalidCredentials:
+                    return BadRequest("Credentials provided are not valid");
+                case LoginResult.InvalidPassword:
+                    return BadRequest("Password provided was not valid.");
+                case LoginResult.UserNotFound:
+                    return BadRequest("User was not found.");
+                default:
+                    return BadRequest("An error occured.");
             }
-
-            var loggedInUser = await _authRepo.LoginUser(loginUserDto);
-
-            if (loggedInUser == null)
-            {
-                return Unauthorized();
-            }
-
-            var loggedInUserDto = _mapper.Map<LoginResponseDto>(loggedInUser);
-
-            return Ok(loggedInUserDto);
 
         }
     }

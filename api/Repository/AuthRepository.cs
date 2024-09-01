@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using api.Data;
 using api.Dtos.User;
+using api.Enums;
 using api.Helpers;
 using api.Interfaces;
 using api.Models;
@@ -58,7 +59,7 @@ namespace api.Repository
 
         }
 
-        public async Task<LoginResponseDto?> LoginUser(LoginUserDto loginUserDto)
+        public async Task<(LoginResult Result, string? Token)> LoginUser(LoginUserDto loginUserDto)
         {
             // check if user exists
             var currentUser = await _context.Users.FirstOrDefaultAsync(user => user.Email == loginUserDto.Email);
@@ -66,19 +67,25 @@ namespace api.Repository
             // if user does not exist, return conflict
             if (currentUser == null)
             {
-                return null;
+                return (LoginResult.UserNotFound, null);
             }
 
             // Check if PasswordHash exists
             if (string.IsNullOrEmpty(currentUser.PasswordHash))
             {
-                return null;
+                return (LoginResult.InvalidCredentials, null);
             }
 
             // verify password
             if (!PasswordHasher.VerifyPassword(loginUserDto.Password, currentUser.PasswordHash))
             {
-                return null;
+                return (LoginResult.InvalidPassword, null);
+            }
+
+            // check account is not locked
+            if (currentUser.IsLocked)
+            {
+                return (LoginResult.AccountLocked, null);
             }
 
             // if user does exist and password is verified, generate jwt
@@ -99,13 +106,7 @@ namespace api.Repository
             var securityToken = tokenHandler.CreateToken(tokenDescriptor);
             var jwt = tokenHandler.WriteToken(securityToken);
 
-            var currentUserDto = _mapper.Map<UserDto>(currentUser);
-
-            return new LoginResponseDto
-            {
-                User = currentUserDto,
-                Token = jwt,
-            };
+            return (LoginResult.Success, jwt);
         }
 
         public async Task<bool> UserExists(string email)
