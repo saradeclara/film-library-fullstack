@@ -18,10 +18,13 @@ namespace api.Controllers
     {
         private readonly IAuthRepository _authRepo;
         private readonly IMapper _mapper;
-        public AuthController(IAuthRepository userRepo, IMapper mapper)
+        private readonly ILogger<AuthController> _logger;
+
+        public AuthController(IAuthRepository userRepo, IMapper mapper, ILogger<AuthController> logger)
         {
             _authRepo = userRepo;
             _mapper = mapper;
+            _logger = logger;
         }
 
         [HttpPost("register")]
@@ -33,45 +36,64 @@ namespace api.Controllers
                 return BadRequest();
             }
 
-            var createdUserModel = await _authRepo.CreateNewUser(createUserDto);
-
-            if (createdUserModel == null)
+            try
             {
-                return Conflict("A user with this email already exists");
+                var createdUserModel = await _authRepo.CreateNewUser(createUserDto);
+
+                if (createdUserModel == null)
+                {
+                    return Conflict("A user with this email already exists");
+                }
+
+                // map model to dto to return to user
+                var createdUserDto = _mapper.Map<UserDto>(createdUserModel);
+                _logger.LogInformation("User created succesfully: {Email}", createdUserDto.Email);
+
+                return CreatedAtAction(
+                    nameof(UserController.GetById),
+                    "User",
+                    new { id = createdUserModel?.Id },
+                    createdUserDto
+                    );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while creating user");
+                return StatusCode(500, "An error occurred while processing your request.");
             }
 
-            // map model to dto to return to user
-            var createdUserDto = _mapper.Map<UserDto>(createdUserModel);
-
-            return CreatedAtAction(
-                nameof(UserController.GetById),
-                "User",
-                new { id = createdUserModel?.Id },
-                createdUserDto
-                );
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginUserDto loginUserDto)
         {
 
-            var (result, token) = await _authRepo.LoginUser(loginUserDto);
-
-            switch (result)
+            try
             {
-                case LoginResult.Success:
-                    return Ok(new { Token = token });
-                case LoginResult.AccountLocked:
-                    return BadRequest("Account is locked.");
-                case LoginResult.InvalidCredentials:
-                    return BadRequest("Credentials provided are not valid");
-                case LoginResult.InvalidPassword:
-                    return BadRequest("Password provided was not valid.");
-                case LoginResult.UserNotFound:
-                    return BadRequest("User was not found.");
-                default:
-                    return BadRequest("An error occured.");
+                var (result, token) = await _authRepo.LoginUser(loginUserDto);
+
+                switch (result)
+                {
+                    case LoginResult.Success:
+                        return Ok(new { Token = token });
+                    case LoginResult.AccountLocked:
+                        return BadRequest("Account is locked.");
+                    case LoginResult.InvalidCredentials:
+                        return BadRequest("Credentials provided are not valid");
+                    case LoginResult.InvalidPassword:
+                        return BadRequest("Password provided was not valid.");
+                    case LoginResult.UserNotFound:
+                        return BadRequest("User was not found.");
+                    default:
+                        return BadRequest("An error occured.");
+                }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred during login attempt");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+
 
         }
     }
