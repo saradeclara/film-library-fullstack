@@ -140,3 +140,6 @@ C:\Users\sarad\projects\film-library-fullstack\api\bin\Debug\net8.0\Microsoft.As
 C:\Users\sarad\projects\film-library-fullstack\api\bin\Debug\net8.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
 C:\Users\sarad\projects\film-library-fullstack\api\bin\Debug\net8.0\Newtonsoft.Json.dll
 C:\Users\sarad\projects\film-library-fullstack\api\bin\Debug\net8.0\Newtonsoft.Json.Bson.dll
+C:\Users\sarad\projects\film-library-fullstack\api\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\sarad\projects\film-library-fullstack\api\bin\Debug\net8.0\BCrypt.Net-Next.dll
+C:\Users\sarad\projects\film-library-fullstack\api\bin\Debug\net8.0\Serilog.dll

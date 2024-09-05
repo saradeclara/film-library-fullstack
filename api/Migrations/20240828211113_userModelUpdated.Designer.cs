@@ -12,8 +12,8 @@ using api.Data;
 namespace api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240814144626_init")]
-    partial class init
+    [Migration("20240828211113_userModelUpdated")]
+    partial class userModelUpdated
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -139,6 +139,34 @@ namespace api.Migrations
                     b.ToTable("Reviews");
                 });
 
+            modelBuilder.Entity("api.Models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
+                });
+
             modelBuilder.Entity("ActorFilm", b =>
                 {
                     b.HasOne("api.Models.Actor", null)
@@ -172,10 +200,15 @@ namespace api.Migrations
             modelBuilder.Entity("api.Models.Review", b =>
                 {
                     b.HasOne("api.Models.Film", "Film")
-                        .WithMany()
+                        .WithMany("Reviews")
                         .HasForeignKey("FilmId");
 
                     b.Navigation("Film");
+                });
+
+            modelBuilder.Entity("api.Models.Film", b =>
+                {
+                    b.Navigation("Reviews");
                 });
 #pragma warning restore 612, 618
         }
