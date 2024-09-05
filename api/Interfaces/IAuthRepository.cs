@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using api.Dtos.User;
 using api.Enums;
 using api.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace api.Interfaces
 {
@@ -12,6 +13,7 @@ namespace api.Interfaces
     {
         Task<User?> CreateNewUser(CreateUserDto createUserDto);
         Task<(LoginResult Result, string? Token)> LoginUser(LoginUserDto loginUserDto);
+        Task<LogoutResult> LogoutUser();
         Task<bool> UserExists(string email);
     }
 }

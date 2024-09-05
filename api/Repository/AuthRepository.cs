@@ -14,6 +14,7 @@ using api.Models;
 using AutoMapper;
 using BCrypt.Net;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -28,22 +29,23 @@ namespace api.Repository
         private readonly JwtSettings _jwtSettings;
         private readonly ILogger<AuthRepository> _logger;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         public AuthRepository(
                 ApplicationDbContext context,
                 IMapper mapper,
                 IConfiguration configuration,
                 ILogger<AuthRepository> logger,
                 IPasswordHasher passwordHasher,
-                IOptions<JwtSettings> jwtSettings
+                IOptions<JwtSettings> jwtSettings,
+                IHttpContextAccessor httpContextAccessor
                 )
         {
             _context = context;
             _mapper = mapper;
             _jwtSettings = jwtSettings.Value ?? throw new ArgumentNullException(nameof(jwtSettings));
-            // _secretKey = configuration["Jwt:Key"]
-            //     ?? throw new ArgumentNullException(nameof(configuration), "JWT Secret Key not configured");
             _logger = logger;
             _passwordHasher = passwordHasher;
+            _httpContextAccessor = httpContextAccessor;
         }
         public async Task<User?> CreateNewUser(CreateUserDto createUserDto)
         {
@@ -59,7 +61,7 @@ namespace api.Repository
             var hashedPassword = _passwordHasher.HashPassword(createUserDto.Password);
 
             // create new user
-            var newUser = new User { UserName = createUserDto.Email, Email = createUserDto.Email, PasswordHash = hashedPassword };
+            var newUser = new User { UserName = createUserDto.Email, Email = createUserDto.Email, PasswordHash = hashedPassword, IsLocked = true };
 
             try
             {
@@ -137,9 +139,12 @@ namespace api.Repository
                 Subject = new ClaimsIdentity(
                     new Claim[]
                     {
-                        new Claim(ClaimTypes.Email, currentUser.Email)
+                        new Claim(ClaimTypes.Email, currentUser.Email),
+                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                     }
                 ),
+                Audience = _jwtSettings.Audience,
+                Issuer = _jwtSettings.Issuer,
                 Expires = DateTime.UtcNow.AddHours(_jwtSettings.ExpirationInMinutes),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
@@ -151,6 +156,35 @@ namespace api.Repository
         public async Task<bool> UserExists(string email)
         {
             return await _context.Users.AnyAsync(user => user.Email == email);
+        }
+
+        public async Task<LogoutResult> LogoutUser()
+        {
+            // Extract token
+            var token = _httpContextAccessor.HttpContext?.Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            // Extract 'jti'
+            var jti = jwtToken.Claims.FirstOrDefault(el => el.Type == JwtRegisteredClaimNames.Jti)?.Value;
+
+            // Extract expiration date
+            var expiration = jwtToken.ValidTo;
+
+            // if jti is valid, add token to blacklisted token
+            if (!string.IsNullOrEmpty(jti))
+            {
+                var newBlacklistedToken = new BlacklistedToken
+                {
+                    Jti = jti,
+                    Expiration = expiration,
+                };
+                _context.BlacklistedTokens.Add(newBlacklistedToken);
+                await _context.SaveChangesAsync();
+            }
+
+            return LogoutResult.Success;
+
         }
     }
 }

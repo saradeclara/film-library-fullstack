@@ -9,5 +9,7 @@ namespace api.Helpers
     {
         public required string Key { get; set; }
         public int ExpirationInMinutes { get; set; }
+        public string Audience { get; set; } = string.Empty;
+        public string Issuer { get; set; } = string.Empty;
     }
 }

@@ -8,6 +8,7 @@ using api.Interfaces;
 using api.Models;
 using api.Repository;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +27,7 @@ namespace api.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetAll([FromQuery] string? title, [FromQuery] string? sortBy, [FromQuery] bool? isDescending, [FromQuery] int pageNumber, [FromQuery] int pageSize)
         {
             var films = await _filmRepo.GetAllFilmsAsync(title, sortBy, isDescending, pageNumber, pageSize);
@@ -35,6 +37,7 @@ namespace api.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [Authorize]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
             var singleFilm = await _filmRepo.GetFilmByIdAsync(id);
@@ -48,6 +51,7 @@ namespace api.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Create([FromBody] CreateFilmDto createFilmDto)
         {
             if (!ModelState.IsValid)
@@ -62,6 +66,7 @@ namespace api.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateFilmDto updateFilmDto)
         {
             if (!ModelState.IsValid)
@@ -81,6 +86,7 @@ namespace api.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             await _filmRepo.DeleteFilmAsync(id);
