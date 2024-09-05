@@ -98,8 +98,8 @@ namespace api.Controllers
 
         }
 
-        [HttpPost("logout")]
         [Authorize]
+        [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
             var logoutResult = await _authRepo.LogoutUser();

@@ -61,7 +61,7 @@ namespace api.Repository
             var hashedPassword = _passwordHasher.HashPassword(createUserDto.Password);
 
             // create new user
-            var newUser = new User { UserName = createUserDto.Email, Email = createUserDto.Email, PasswordHash = hashedPassword };
+            var newUser = new User { UserName = createUserDto.Email, Email = createUserDto.Email, PasswordHash = hashedPassword, IsLocked = true };
 
             try
             {
@@ -139,9 +139,12 @@ namespace api.Repository
                 Subject = new ClaimsIdentity(
                     new Claim[]
                     {
-                        new Claim(ClaimTypes.Email, currentUser.Email)
+                        new Claim(ClaimTypes.Email, currentUser.Email),
+                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                     }
                 ),
+                Audience = _jwtSettings.Audience,
+                Issuer = _jwtSettings.Issuer,
                 Expires = DateTime.UtcNow.AddHours(_jwtSettings.ExpirationInMinutes),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
@@ -163,7 +166,7 @@ namespace api.Repository
             var jwtToken = handler.ReadJwtToken(token);
 
             // Extract 'jti'
-            var jti = jwtToken.Claims.FirstOrDefault(el => el.Type == JwtRegisteredClaimNames.Email)?.Value;
+            var jti = jwtToken.Claims.FirstOrDefault(el => el.Type == JwtRegisteredClaimNames.Jti)?.Value;
 
             // Extract expiration date
             var expiration = jwtToken.ValidTo;
