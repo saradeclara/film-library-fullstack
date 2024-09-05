@@ -23,10 +23,12 @@ builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var jwtSettings = builder.Configuration.GetSection("Jwt");
 var keyString = jwtSettings["Key"] ?? throw new ArgumentNullException("JWT Key is not configured.");
 var key = Encoding.ASCII.GetBytes(keyString);
 

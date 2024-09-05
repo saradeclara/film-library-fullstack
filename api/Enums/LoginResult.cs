@@ -7,6 +7,5 @@ namespace api.Enums
         InvalidPassword,
         InvalidCredentials,
         AccountLocked,
-        // EmailNotConfirmed
     }
 }

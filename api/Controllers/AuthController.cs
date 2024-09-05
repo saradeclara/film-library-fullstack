@@ -6,6 +6,7 @@ using api.Dtos.User;
 using api.Enums;
 using api.Interfaces;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Serilog;
@@ -95,6 +96,21 @@ namespace api.Controllers
             }
 
 
+        }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            var logoutResult = await _authRepo.LogoutUser();
+
+            if (logoutResult != LogoutResult.Success)
+            {
+                _logger.LogError("User was not logged out");
+                return Ok("User was not logged out successfully");
+            }
+            _logger.LogInformation("User was logged out");
+            return Ok("User was logged out successfully");
         }
     }
 }

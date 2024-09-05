@@ -12,3 +12,5 @@ api/bin/Debug/net8.0/appsettings.Development.json
 appsettings.Development.json
 *.Development.json
 appsettings.json
+
+api/obj/Debug/net8.0/api.csproj.FileListAbsolute.txt
