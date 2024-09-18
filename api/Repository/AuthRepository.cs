@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net.Mail;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using api.Data;
@@ -30,6 +32,10 @@ namespace api.Repository
         private readonly ILogger<AuthRepository> _logger;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly LinkGenerator _linkGenerator;
+        private readonly IConfiguration _configuration;
+        private readonly IEmailService _emailService;
+
         public AuthRepository(
                 ApplicationDbContext context,
                 IMapper mapper,
@@ -37,7 +43,9 @@ namespace api.Repository
                 ILogger<AuthRepository> logger,
                 IPasswordHasher passwordHasher,
                 IOptions<JwtSettings> jwtSettings,
-                IHttpContextAccessor httpContextAccessor
+                IHttpContextAccessor httpContextAccessor,
+                LinkGenerator linkGenerator,
+                IEmailService emailService
                 )
         {
             _context = context;
@@ -46,6 +54,9 @@ namespace api.Repository
             _logger = logger;
             _passwordHasher = passwordHasher;
             _httpContextAccessor = httpContextAccessor;
+            _linkGenerator = linkGenerator;
+            _configuration = configuration;
+            _emailService = emailService;
         }
         public async Task<User?> CreateNewUser(CreateUserDto createUserDto)
         {
@@ -61,12 +72,35 @@ namespace api.Repository
             var hashedPassword = _passwordHasher.HashPassword(createUserDto.Password);
 
             // create new user
-            var newUser = new User { UserName = createUserDto.Email, Email = createUserDto.Email, PasswordHash = hashedPassword, IsLocked = true };
+            var newUser = new User
+            {
+                UserName = createUserDto.Email,
+                Email = createUserDto.Email,
+                PasswordHash = hashedPassword,
+                IsVerified = false,
+                ConfirmationToken = GenerateConfirmationToken(),
+            };
+
+            string confirmationLink;
+            if (_httpContextAccessor?.HttpContext != null)
+            {
+                // generate confirmation link
+                confirmationLink = GenerateConfirmationLink(newUser.Email, newUser.ConfirmationToken, _httpContextAccessor.HttpContext);
+            }
+            else
+            {
+                _logger.LogError("HttpContext is not available");
+                throw new InvalidOperationException("HttpContext is not available.");
+            }
+
 
             try
             {
                 await _context.Users.AddAsync(newUser);
                 await _context.SaveChangesAsync();
+
+                // send confirmation email
+                await _emailService.SendConfirmationEmailAsync(newUser.Email, confirmationLink);
             }
             catch (DbUpdateException ex)
             {
@@ -105,10 +139,10 @@ namespace api.Repository
                 return (LoginResult.InvalidPassword, null);
             }
 
-            // check account is not locked
-            if (currentUser.IsLocked)
+            // check account is not verified
+            if (currentUser.IsVerified)
             {
-                _logger.LogWarning("Current user is locked: {Email}", loginUserDto.Email);
+                _logger.LogWarning("Current user is not verified: {Email}", loginUserDto.Email);
                 return (LoginResult.AccountLocked, null);
             }
 
@@ -186,5 +220,31 @@ namespace api.Repository
             return LogoutResult.Success;
 
         }
+
+        private string GenerateConfirmationToken()
+        {
+            return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        }
+
+        private string GenerateConfirmationLink(string email, string token, HttpContext httpContext)
+        {
+            var confirmationLink = _linkGenerator.GetUriByAction(
+                httpContext,
+                action: "ConfirmEmail",
+                controller: "Auth",
+                values: new { email, token },
+                scheme: httpContext?.Request.Scheme
+
+            );
+
+            if (confirmationLink == null)
+            {
+                return "";
+            }
+
+            return confirmationLink;
+        }
+
+
     }
 }
