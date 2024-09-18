@@ -112,5 +112,11 @@ namespace api.Controllers
             _logger.LogInformation("User was logged out");
             return Ok("User was logged out successfully");
         }
+
+        [HttpGet("confirm-email/{email}/{confirmationtoken}")]
+        public async Task<IActionResult> ConfirmEmail(string email, string confirmationToken)
+        {
+            return Ok("message");
+        }
     }
 }

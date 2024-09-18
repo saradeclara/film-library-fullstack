@@ -1,4 +1,3 @@
-C:\Users\sarad\projects\film-library-fullstack\api\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\sarad\projects\film-library-fullstack\api\bin\Debug\net8.0\appsettings.json
 C:\Users\sarad\projects\film-library-fullstack\api\bin\Debug\net8.0\api.exe
 C:\Users\sarad\projects\film-library-fullstack\api\bin\Debug\net8.0\api.deps.json
